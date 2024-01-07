@@ -1,9 +1,8 @@
 cmake_minimum_required (VERSION 2.8)
-project (ACMMP)
+project(ACMMP LANGUAGES CUDA CXX)
 
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-8.0")
-find_package(CUDA 6.0 REQUIRED ) # For Cuda Managed Memory and c++11
-find_package(OpenCV REQUIRED )
+find_package(CUDAToolkit REQUIRED)
+find_package(OpenCV REQUIRED)
 
 
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -20,26 +19,30 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wno-switch)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -march=native") # extend release-profile with fast-math
 endif()
-
 find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 
-# For compilation ...
-# Specify target & source files to compile it from
-cuda_add_executable(
-    ACMMP
+add_executable(
+    ${PROJECT_NAME}
     main.h
     ACMMP.h
     ACMMP.cpp
     ACMMP.cu
     main.cpp
-    )
+)
+
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+        CUDA_ARCHITECTURES native
+)
 
 # For linking ...
 # Specify target & libraries to link it with
-target_link_libraries(ACMMP
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    CUDA::cudart
     ${OpenCV_LIBS}
     )
